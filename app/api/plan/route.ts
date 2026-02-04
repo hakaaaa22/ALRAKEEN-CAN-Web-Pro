@@ -42,7 +42,13 @@ export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file") as File | null;
 
-  if (!file) return new NextResponse("Missing file", { status: 400 });
+  return new Response(zipU8.buffer, {
+  headers: {
+    "Content-Type": "application/zip",
+    "Content-Disposition": "attachment; filename=ALRAKEEN_Project_Pack.zip",
+  },
+});
+
 
   const optionsRaw = (form.get("options") as string) ?? "{}";
   const opt = JSON.parse(optionsRaw);
@@ -134,10 +140,9 @@ export async function POST(req: Request) {
 
   const zipU8 = await zip.generateAsync({ type: "uint8array" });
 
-  return new NextResponse(zipU8, {
-    headers: {
-      "Content-Type": "application/zip",
-      "Content-Disposition": "attachment; filename=ALRAKEEN_Project_Pack.zip",
-    },
-  });
-}
+return new Response(zipU8.buffer, {
+  headers: {
+    "Content-Type": "application/zip",
+    "Content-Disposition": "attachment; filename=ALRAKEEN_Project_Pack.zip",
+  },
+});
