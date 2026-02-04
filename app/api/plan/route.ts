@@ -3,8 +3,10 @@ import * as XLSX from "xlsx";
 import ExcelJS from "exceljs";
 import JSZip from "jszip";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import { recommend } from "@/lib/recommend";
-import { getWikimediaThumb, deviceImageUrl } from "@/lib/images";
+
+// ✅ FIX: use relative imports (works on Linux/Vercel 100%)
+import { recommend } from "../../../lib/recommend";
+import { getWikimediaThumb, deviceImageUrl } from "../../../lib/images";
 
 export const runtime = "nodejs";
 
@@ -34,21 +36,13 @@ function toInt(v: any) {
   return Number.isFinite(n) ? Math.trunc(n) : undefined;
 }
 
-function addDaysISO(iso: string, days: number) {
-  const d = new Date(iso + "T00:00:00Z");
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
 /* ---------------- API ---------------- */
 
 export async function POST(req: Request) {
   const form = await req.formData();
   const file = form.get("file") as File | null;
 
-  if (!file) {
-    return new NextResponse("Missing file", { status: 400 });
-  }
+  if (!file) return new NextResponse("Missing file", { status: 400 });
 
   const optionsRaw = (form.get("options") as string) ?? "{}";
   const opt = JSON.parse(optionsRaw);
@@ -60,9 +54,7 @@ export async function POST(req: Request) {
   const ws = wb.Sheets[wb.SheetNames[0]];
   const json = XLSX.utils.sheet_to_json(ws, { defval: "" }) as any[];
 
-  if (!json.length) {
-    return new NextResponse("Empty sheet", { status: 400 });
-  }
+  if (!json.length) return new NextResponse("Empty sheet", { status: 400 });
 
   const headers = Object.keys(json[0]).map(String);
 
@@ -74,14 +66,22 @@ export async function POST(req: Request) {
   const outRows: any[] = [];
 
   for (const r of json) {
-    const category = colCat ? String(r[colCat]) : "";
-    const make = colMake ? String(r[colMake]) : "";
-    const model = colModel ? String(r[colModel]) : "";
+    const category = colCat ? String(r[colCat] ?? "") : "";
+    const make = colMake ? String(r[colMake] ?? "") : "";
+    const model = colModel ? String(r[colModel] ?? "") : "";
     const year = colYear ? toInt(r[colYear]) : undefined;
 
     const rec = await recommend(category, make, model, year);
 
-    const img = await getWikimediaThumb(`${make} ${model}`);
+    // ✅ HARDEN: image fetch should never break the route
+    let img: string | null = null;
+    try {
+      const q = `${make} ${model}`.trim();
+      img = q ? await getWikimediaThumb(q) : null;
+    } catch {
+      img = null;
+    }
+
     const deviceUrl = deviceImageUrl(rec.recommendedDevice);
 
     outRows.push({
@@ -121,21 +121,14 @@ export async function POST(req: Request) {
       lang === "ar"
         ? "ALRAKEEN | توصية أجهزة Teltonika CAN"
         : "ALRAKEEN | Teltonika CAN Recommendation",
-      {
-        x: 40,
-        y: 800,
-        size: 18,
-        font,
-        color: rgb(0.1, 0.2, 0.8),
-      }
+      { x: 40, y: 800, size: 18, font, color: rgb(0.1, 0.2, 0.8) }
     );
 
     pdfBytes = await pdf.save();
   }
 
-  /* ---------- ZIP (✅ FIXED) ---------- */
+  /* ---------- ZIP ---------- */
   const zip = new JSZip();
-
   zip.file("ALRAKEEN_Output.xlsx", excelU8);
   if (pdfBytes) zip.file("ALRAKEEN_Report.pdf", pdfBytes);
 
@@ -144,8 +137,7 @@ export async function POST(req: Request) {
   return new NextResponse(zipU8, {
     headers: {
       "Content-Type": "application/zip",
-      "Content-Disposition":
-        "attachment; filename=ALRAKEEN_Project_Pack.zip",
+      "Content-Disposition": "attachment; filename=ALRAKEEN_Project_Pack.zip",
     },
   });
 }
