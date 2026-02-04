@@ -1,0 +1,16 @@
+:root{--blue:#0b5cff;--blue2:#0a3bb5;--bg:#ffffff;--text:#0b1220;--muted:#5b677a;--line:#e6ebf2;}
+*{box-sizing:border-box}html,body{padding:0;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Tahoma,Arial}
+a{color:var(--blue);text-decoration:none}
+.container{max-width:1100px;margin:0 auto;padding:20px}
+.card{border:1px solid var(--line);border-radius:16px;padding:18px;background:#fff;box-shadow:0 4px 20px rgba(10,20,40,.04)}
+.row{display:flex;gap:14px;flex-wrap:wrap}.col{flex:1;min-width:260px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}
+.badge{font-size:12px;border:1px solid var(--line);padding:6px 10px;border-radius:999px;color:var(--muted)}
+.btn{background:var(--blue);color:#fff;border:none;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn2{background:#fff;color:var(--blue);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+.input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+label{font-size:13px;color:var(--muted)}hr{border:none;border-top:1px solid var(--line);margin:16px 0}
+.checkbox{display:flex;gap:10px;align-items:center;margin:8px 0}
+.footer{margin-top:16px;color:var(--muted);font-size:12px}
