@@ -1,6 +1,13 @@
-node_modules
-.next
-.vercel
+node_modules/
+.next/
+out/
+.vercel/
 .env
 .env.local
+.env.*.local
+*.log
 .DS_Store
+Thumbs.db
+
+.vercel
+.env*.local
